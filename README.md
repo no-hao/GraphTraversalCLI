@@ -7,11 +7,12 @@ This tool allows users to load a graph structure from a CSV file and then perfor
 ## Features
 
 - **Graph Loading**: Loads a graph from a CSV file and represents it as an adjacency list.
-- **User Input**: Prompts the user for necessary inputs including start and end nodes, and various operational flags.
+- **User Input**: Prompts the user for necessary inputs including start and end nodes, and various operational flags. Users can exit at any prompt by typing 'exit'.
 - **Graph Traversal**: Implements BFS and DFS algorithms to find paths between two nodes in the graph.
 - **Graph Visualization**: Visualizes the graph and the paths found using the NetworkX and Matplotlib libraries (optional).
 - **Debugging Information**: Provides an option to print debug information during traversal (optional).
 - **Graph Printing**: Prints the graph structure to the console (optional).
+- **Exit Command**: Allows users to exit the script at any time by entering the 'exit' command.
 
 ## Installation
 
@@ -42,7 +43,7 @@ pip install networkx matplotlib
 ### `read_graph_from_csv(file_path)`
 Reads the graph data from the specified CSV file and returns it as an adjacency list.
 
-### `get_user_input()`
+### `get_user_input(graph)`
 Prompts the user to input necessary information for graph traversal.
 
 ### `bfs(graph, start_node, end_node, debug=False)`
@@ -57,7 +58,7 @@ Prints the graph represented as an adjacency list.
 ### `visualize_graph(graph, path)`
 Visualizes the graph and the specified path using NetworkX and Matplotlib.
 
-### `main()`
+### `graph_traversal_cli()`
 The main function that orchestrates the entire process of reading the graph data from a file, getting user input, and performing BFS and DFS.
 
 ## Contribution
@@ -71,4 +72,3 @@ If you would like to contribute to this project, feel free to fork the repositor
 ## Contact
 
 For any queries or suggestions, please contact [es8070@ship.edu].
-

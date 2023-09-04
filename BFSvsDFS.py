@@ -1,22 +1,27 @@
 import csv
 from collections import deque
 
-# Check if the necessary modules are installed
-try:
-    import networkx as nx
-    import matplotlib.pyplot as plt
-    visualization_modules_installed = True
-except ImportError:
-    visualization_modules_installed = False
+# Constants
+EXIT_COMMAND = 'exit'
+CSV_EXTENSION = '.csv'
+
+
+def get_input(prompt):
+    user_input = input(prompt)
+    if user_input.lower() == EXIT_COMMAND:
+        print("Exiting...")
+        exit()
+    return user_input
 
 
 def read_graph_from_csv(file_path):
     """
-    Reads the graph data from the specified CSV file and returns it as an adjacency list.
-    
+    Reads the graph data from the specified CSV file and returns it as an
+    adjacency list.
     :param file_path: Path to the CSV file containing graph data
-    :return: A tuple where the first element is an adjacency list (or None in case of error) and 
-             the second element is an error message (or None if successful)
+    :return: A tuple where the first element is an adjacency list (or None in
+             case of error) and the second element is an error message (or None
+             if successful)
     """
     adjacency_list = {}
     try:
@@ -25,60 +30,64 @@ def read_graph_from_csv(file_path):
             next(reader)
             for row in reader:
                 node = int(row[0])
-                neighbors = set(map(int, filter(bool, row[1:])))
-                adjacency_list[node] = neighbors
+                adjacency_list[node] = {int(neigh) for neigh in row[1:] if neigh}
         return adjacency_list, None
     except Exception as e:
         return None, str(e)
 
 
-def get_user_input():
+def get_user_input(graph):
     """
-    Prompts the user to input necessary information for graph traversal, including the file path,
-    start node, end node, and various flags for printing and visualization.
-    
-    :return: A tuple containing the file name, start node, end node, graph, and flags entered by the user
+    Prompts the user to input necessary information for graph traversal,
+    including the start node, end node, and various flags for printing and
+    visualization.
+    :param graph: The graph represented as an adjacency list
+    :return: A tuple containing the start node, end node, graph, and flags
+             entered by the user
     """
     while True:
-        file_name = input("Please enter the file name and extension: ")
-        if not file_name.endswith('.csv'):
-            print("Invalid file extension. Please enter a valid .csv file.")
-            continue
-
-        graph, error = read_graph_from_csv(file_name)
-        if error:
-            print(f"Error loading graph: {error}. "
-                  "Please check the file name and try again.")
-            continue
-
-        start_node = input("Start node: ")
-        end_node = input("End Node: ")
-        print_flag = input("Enter p to print the graph, "
-                           "or press Enter to continue: ")
-        debug_flag = input("Enter d to enable debug mode (verbose output), "
-                           "or press Enter to continue: ")
-        visualize_flag = input("Enter v to visualize the graph and the "
-                               "path found, or press Enter to continue: ")
-
         try:
-            start_node = int(start_node)
-            end_node = int(end_node)
+            start_node = int(get_input("Start node (or type 'exit' to quit): "))
+            end_node = int(get_input("End Node (or type 'exit' to quit): "))
+
             if start_node not in graph or end_node not in graph:
                 raise ValueError("Node ID out of range")
-            return file_name, start_node, end_node, graph, print_flag == 'p', debug_flag == 'd', visualize_flag == 'v'
+
+            print_flag_input = get_input(
+                "Enter p to print the graph, or type 'exit' to quit, or press "
+                "Enter to continue: "
+            )
+            debug_flag_input = get_input(
+                "Enter d to enable debug mode (verbose output), or type 'exit' "
+                "to quit, or press Enter to continue: "
+            )
+            visualize_flag_input = get_input(
+                "Enter v to visualize the graph and the path found, or type "
+                "'exit' to quit, or press Enter to continue: "
+            )
+
+            return (
+                start_node, end_node, graph,
+                print_flag_input == 'p',
+                debug_flag_input == 'd',
+                visualize_flag_input == 'v'
+            )
         except ValueError as e:
             print(f"Invalid input: {e}. Please try again.")
+        except SystemExit:
+            raise
 
 
 def bfs(graph, start_node, end_node, debug=False):
     """
-    Performs breadth-first search (BFS) on the graph to find the shortest path from start_node to end_node.
-    
+    Performs breadth-first search (BFS) on the graph to find the shortest path
+    from start_node to end_node.
     :param graph: The graph represented as an adjacency list
     :param start_node: The start node for the BFS
     :param end_node: The end node for the BFS
     :param debug: A flag indicating whether to print debug information
-    :return: A list representing the path from start_node to end_node (or None if no path found)
+    :return: A list representing the path from start_node to end_node (or None
+             if no path found)
     """
     queue = deque([start_node])
     visited = set([start_node])
@@ -90,11 +99,11 @@ def bfs(graph, start_node, end_node, debug=False):
 
         current_node = queue.popleft()
         if current_node == end_node:
-            path = []
+            path = deque()
             while current_node is not None:
-                path.insert(0, current_node)
+                path.appendleft(current_node)
                 current_node = predecessor[current_node]
-            return path
+            return list(path)
         for neighbor in graph[current_node]:
             if neighbor not in visited:
                 visited.add(neighbor)
@@ -105,13 +114,14 @@ def bfs(graph, start_node, end_node, debug=False):
 
 def dfs(graph, start_node, end_node, debug=False):
     """
-    Performs depth-first search (DFS) on the graph to find a path from start_node to end_node.
-    
+    Performs depth-first search (DFS) on the graph to find a path from
+    start_node to end_node.
     :param graph: The graph represented as an adjacency list
     :param start_node: The start node for the DFS
     :param end_node: The end node for the DFS
     :param debug: A flag indicating whether to print debug information
-    :return: A list representing the path from start_node to end_node (or None if no path found)
+    :return: A list representing the path from start_node to end_node (or None
+             if no path found)
     """
     visited = set()
     predecessor = {}
@@ -131,12 +141,12 @@ def dfs(graph, start_node, end_node, debug=False):
         return False
 
     if helper(start_node):
-        path = []
+        path = deque()
         current_node = end_node
         while current_node is not None:
-            path.insert(0, current_node)
+            path.appendleft(current_node)
             current_node = predecessor.get(current_node)
-        return path
+        return list(path)
     else:
         return None
 
@@ -144,7 +154,6 @@ def dfs(graph, start_node, end_node, debug=False):
 def print_graph(graph):
     """
     Prints the graph represented as an adjacency list.
-    
     :param graph: The graph represented as an adjacency list
     """
     for node, neighbors in graph.items():
@@ -155,7 +164,6 @@ def print_graph(graph):
 def visualize_graph(graph, path):
     """
     Visualizes the graph and the specified path using NetworkX and Matplotlib.
-    
     :param graph: The graph represented as an adjacency list
     :param path: A list representing a path in the graph
     """
@@ -164,10 +172,14 @@ def visualize_graph(graph, path):
         import matplotlib.pyplot as plt
     except ImportError:
         print("Visualization requires networkx and matplotlib modules.")
-        install_prompt = input("Do you want to install them now? (y/n): ").strip().lower()
+        install_prompt = input(
+            "Do you want to install them now? (y/n): "
+        ).strip().lower()
         if install_prompt == 'y':
             import subprocess
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "networkx", "matplotlib"])
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "networkx", "matplotlib"]
+            )
             import networkx as nx
             import matplotlib.pyplot as plt
         else:
@@ -182,23 +194,36 @@ def visualize_graph(graph, path):
 
     pos = nx.spring_layout(G)
     nx.draw(G, pos, with_labels=True)
-    
     if path:
         edges_in_path = [(path[i], path[i+1]) for i in range(len(path)-1)]
-        nx.draw_networkx_edges(G, pos, edgelist=edges_in_path, edge_color='r', width=2, arrows=True)
+        nx.draw_networkx_edges(
+            G, pos, edgelist=edges_in_path, edge_color='r', width=2, arrows=True
+        )
         nx.draw_networkx_nodes(G, pos, nodelist=path, node_color='r')
-    
     plt.show()
 
 
-def main():
+def graph_traversal_cli():
     """
-    The main function that orchestrates the entire process of reading the graph data from a file,
-    getting user input, and performing BFS and DFS.
+    The main function that orchestrates the entire process of reading the graph
+    data from a file, getting user input, and performing BFS and DFS.
     """
     while True:
         try:
-            file_name, start_node, end_node, graph, print_flag, debug_flag, visualize_flag = get_user_input()
+            file_name = get_input(
+                "Please enter the file name and extension (or type 'exit' to quit): "
+            )
+            if not file_name.endswith(CSV_EXTENSION):
+                print(f"Invalid file extension. Please enter a valid {CSV_EXTENSION} file.")
+                continue
+
+            graph, error = read_graph_from_csv(file_name)
+            if error:
+                print(f"Error loading graph: {error}. Please check the file name and try again.")
+                continue
+
+            user_input_result = get_user_input(graph)
+            start_node, end_node, graph, print_flag, debug_flag, visualize_flag = user_input_result
 
             if print_flag:
                 print("Graph:")
@@ -219,12 +244,14 @@ def main():
                 print("Depth-first Search")
                 print(" -> ".join(map(str, dfs_result)))
                 if visualize_flag:
-                    visualize_graph
                     visualize_graph(graph, dfs_result)
             else:
                 print("No path found in depth-first search")
 
             break
+        except SystemExit:
+            print("Exiting...")
+            exit()
         except Exception as e:
             print(f"An error occurred: {e}")
             break
@@ -232,4 +259,4 @@ def main():
 
 # Run the main function
 if __name__ == "__main__":
-    main()
+    graph_traversal_cli()
