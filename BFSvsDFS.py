@@ -78,6 +78,24 @@ def get_user_input(graph):
             raise
 
 
+def reconstruct_path(predecessor, start_node, end_node):
+    """
+    Reconstructs the path from start_node to end_node using the predecessor dictionary.
+    :param predecessor: A dictionary where the key is a node and the value is the predecessor of that node
+    :param start_node: The start node for the path
+    :param end_node: The end node for the path
+    :return: A list representing the path from start_node to end_node (or None if no path found)
+    """
+    path = deque()
+    current_node = end_node
+    while current_node is not None:
+        path.appendleft(current_node)
+        current_node = predecessor.get(current_node)
+    if path[0] == start_node:
+        return list(path)
+    else:
+        return None
+
 def bfs(graph, start_node, end_node, debug=False):
     """
     Performs breadth-first search (BFS) on the graph to find the shortest path
@@ -99,18 +117,13 @@ def bfs(graph, start_node, end_node, debug=False):
 
         current_node = queue.popleft()
         if current_node == end_node:
-            path = deque()
-            while current_node is not None:
-                path.appendleft(current_node)
-                current_node = predecessor[current_node]
-            return list(path)
+            return reconstruct_path(predecessor, start_node, end_node)
         for neighbor in graph[current_node]:
             if neighbor not in visited:
                 visited.add(neighbor)
                 queue.append(neighbor)
                 predecessor[neighbor] = current_node
     return None
-
 
 def dfs(graph, start_node, end_node, debug=False):
     """
@@ -135,18 +148,14 @@ def dfs(graph, start_node, end_node, debug=False):
             return True
         visited.add(current_node)
         for neighbor in graph[current_node]:
-            if neighbor not in visited and helper(neighbor):
-                predecessor[neighbor] = current_node
-                return True
+            if neighbor not in visited:
+                predecessor[neighbor] = current_node  # Moved this line up
+                if helper(neighbor):
+                    return True
         return False
 
     if helper(start_node):
-        path = deque()
-        current_node = end_node
-        while current_node is not None:
-            path.appendleft(current_node)
-            current_node = predecessor.get(current_node)
-        return list(path)
+        return reconstruct_path(predecessor, start_node, end_node)
     else:
         return None
 
