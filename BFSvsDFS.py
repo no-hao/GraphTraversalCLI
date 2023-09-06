@@ -96,6 +96,7 @@ def reconstruct_path(predecessor, start_node, end_node):
     else:
         return None
 
+
 def bfs(graph, start_node, end_node, debug=False):
     """
     Performs breadth-first search (BFS) on the graph to find the shortest path
@@ -124,6 +125,7 @@ def bfs(graph, start_node, end_node, debug=False):
                 queue.append(neighbor)
                 predecessor[neighbor] = current_node
     return None
+
 
 def dfs(graph, start_node, end_node, debug=False):
     """
