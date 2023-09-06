@@ -29,8 +29,8 @@ def read_graph_from_csv(file_path):
             reader = csv.reader(file)
             next(reader)
             for row in reader:
-                node = int(row[0])
-                adjacency_list[node] = [int(neigh) for neigh in row[1:] if neigh]
+                node = row[0]
+                adjacency_list[node] = [neigh for neigh in row[1:] if neigh]
         return adjacency_list, None
     except Exception as e:
         return None, str(e)
@@ -47,8 +47,8 @@ def get_user_input(graph):
     """
     while True:
         try:
-            start_node = int(get_input("Start node (or type 'exit' to quit): "))
-            end_node = int(get_input("End Node (or type 'exit' to quit): "))
+            start_node = get_input("Start node (or type 'exit' to quit): ")
+            end_node = get_input("End Node (or type 'exit' to quit): ")
 
             if start_node not in graph or end_node not in graph:
                 raise ValueError("Node ID out of range")
