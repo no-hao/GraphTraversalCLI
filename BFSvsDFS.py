@@ -30,7 +30,7 @@ def read_graph_from_csv(file_path):
             next(reader)
             for row in reader:
                 node = int(row[0])
-                adjacency_list[node] = {int(neigh) for neigh in row[1:] if neigh}
+                adjacency_list[node] = [int(neigh) for neigh in row[1:] if neigh]
         return adjacency_list, None
     except Exception as e:
         return None, str(e)
