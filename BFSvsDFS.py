@@ -1,38 +1,39 @@
 import csv
 from collections import deque
 from time import time
+from typing import Dict, List, Tuple, Optional
 
 # Constants
 EXIT_COMMAND = 'exit'
-CSV_EXTENSION = '.csv'
+CSV_FILE_EXTENSION = '.csv'
 
-# Constants for error handling
-MAX_STACK_QUEUE_SIZE = 10000  # Adjust as necessary
-TIMEOUT = 60  # Adjust as necessary in seconds
+# Error handling constants
+MAX_TRAVERSAL_QUEUE_SIZE = 10000  # Adjust as necessary
+TRAVERSAL_TIMEOUT_SECONDS = 60  # Adjust as necessary in seconds
 
 
-def get_input(prompt):
+# Section: Input and Output utilities
+def get_input(prompt: str) -> str:
     user_input = input(prompt)
     if user_input.lower() == EXIT_COMMAND:
         print("Exiting...")
         exit()
     return user_input
 
-
-def read_graph_from_csv(file_path):
+def read_graph_from_csv(file_path: str) -> Tuple[Dict[str, List[str]], Optional[str]]:
     """
     Reads the graph data from the specified CSV file and returns it as an
     adjacency list.
-    :param file_path: Path to the CSV file containing graph data
-    :return: A tuple where the first element is an adjacency list (or None in
-             case of error) and the second element is an error message (or None
-             if successful)
+
+    :param file_path: str - Path to the CSV file containing graph data
+    :return: tuple - A tuple where the first element is an adjacency list
+             represented as a dictionary (or None in case of error), and the
+             second element is an error message (or None if successful)
     """
     adjacency_list = {}
     try:
         with open(file_path, 'r', encoding='utf-8-sig') as file:
             reader = csv.reader(file)
-            next(reader)
             for row in reader:
                 node = row[0]
                 adjacency_list[node] = [neigh for neigh in row[1:] if neigh]
@@ -41,14 +42,15 @@ def read_graph_from_csv(file_path):
         return None, str(e)
 
 
-def get_user_input(graph):
+# Section: User Input Handling
+def get_user_input(graph: Dict[str, List[str]]) -> Tuple[str, str, Dict[str, List[str]], bool, bool, bool]:
     """
     Prompts the user to input necessary information for graph traversal,
     including the start node, end node, and various flags for printing and
     visualization.
-    :param graph: The graph represented as an adjacency list
-    :return: A tuple containing the start node, end node, graph, and flags
-             entered by the user
+
+    :param graph: dict - The graph represented as an adjacency list
+    :return: tuple - A tuple containing the start node, end node, graph, and flags entered by the user
     """
     while True:
         try:
@@ -83,7 +85,8 @@ def get_user_input(graph):
             raise
 
 
-def reconstruct_path(predecessor, start_node, end_node):
+# Section: Graph Traversal Algorithms
+def reconstruct_path(predecessor: Dict[str, str], start_node: str, end_node: str) -> Optional[List[str]]:
     """
     Reconstructs the path from start_node to end_node using the predecessor dictionary.
     :param predecessor: A dictionary where the key is a node and the value is the predecessor of that node
@@ -102,7 +105,7 @@ def reconstruct_path(predecessor, start_node, end_node):
         return None
 
 
-def bfs(graph, start_node, end_node, debug=False):
+def bfs(graph: Dict[str, List[str]], start_node: str, end_node: str, debug: bool = False) -> Optional[List[str]]:
     """
     Performs breadth-first search (BFS) on the graph to find the shortest path
     from start_node to end_node.
@@ -119,9 +122,9 @@ def bfs(graph, start_node, end_node, debug=False):
     predecessor = {start_node: None}
 
     while queue:
-        if time() - start_time > TIMEOUT:
+        if time() - start_time > TRAVERSAL_TIMEOUT_SECONDS:
             raise TimeoutError("BFS timed out")
-        if len(queue) > MAX_STACK_QUEUE_SIZE:
+        if len(queue) > MAX_TRAVERSAL_QUEUE_SIZE:
             raise MemoryError("BFS queue size limit exceeded")
 
         if debug:
@@ -141,37 +144,36 @@ def bfs(graph, start_node, end_node, debug=False):
     return None
 
 
-def dfs(graph, start_node, end_node, debug=False):
+def dfs(graph: Dict[str, List[str]], start_node: str, end_node: str, debug: bool = False) -> Optional[List[str]]:
     """
     Performs depth-first search (DFS) on the graph to find a path from
     start_node to end_node using an explicit stack data structure.
-    :param graph: The graph represented as an adjacency list
-    :param start_node: The start node for the DFS
-    :param end_node: The end node for the DFS
-    :param debug: A flag indicating whether to print debug information
-    :return: A list representing the path from start_node to end_node (or None
-             if no path found)
+    
+    :param graph: dict[str, List[str]] - The graph represented as an adjacency list
+    :param start_node: str - The start node for the DFS
+    :param end_node: str - The end node for the DFS
+    :param debug: bool - A flag indicating whether to print debug information
+    :return: List[str] or None - A list representing the path from start_node to end_node or None if no path found
     """
     start_time = time()
     stack = [start_node]
-    visited = set([start_node])
+    visited = {start_node}
     predecessor = {start_node: None}
 
     while stack:
-        if time() - start_time > TIMEOUT:
+        if time() - start_time > TRAVERSAL_TIMEOUT_SECONDS:
             raise TimeoutError("DFS timed out")
-        if len(stack) > MAX_STACK_QUEUE_SIZE:
+        if len(stack) > MAX_TRAVERSAL_QUEUE_SIZE:
             raise MemoryError("DFS stack size limit exceeded")
 
         current_node = stack.pop()
+        
         if debug:
             print(f"Current Node: {current_node}")
             print(f"Visited: {visited}")
 
         if current_node == end_node:
             return reconstruct_path(predecessor, start_node, end_node)
-
-        visited.add(current_node)
 
         for neighbor in graph[current_node]:
             if neighbor not in visited:
@@ -182,7 +184,8 @@ def dfs(graph, start_node, end_node, debug=False):
     return None
 
 
-def print_graph(graph):
+# Section: Graph Visualization and Printing
+def print_graph(graph: Dict[str, List[str]]) -> None:
     """
     Prints the graph represented as an adjacency list.
     :param graph: The graph represented as an adjacency list
@@ -192,7 +195,7 @@ def print_graph(graph):
         print(f"{node} -> {neighbors_str}")
 
 
-def visualize_graph(graph, path):
+def visualize_graph(graph: Dict[str, List[str]], path: List[str]) -> None:
     """
     Visualizes the graph and the specified path using NetworkX and Matplotlib.
     :param graph: The graph represented as an adjacency list
@@ -234,7 +237,8 @@ def visualize_graph(graph, path):
     plt.show()
 
 
-def graph_traversal_cli():
+# Section: Main CLI Function
+def graph_traversal_cli() -> None:
     """
     The main function that orchestrates the entire process of reading the graph
     data from a file, getting user input, and performing BFS and DFS.
@@ -244,7 +248,7 @@ def graph_traversal_cli():
             file_name = get_input(
                 "Please enter the file name and extension (or type 'exit' to quit): "
             )
-            if not file_name.endswith(CSV_EXTENSION):
+            if not file_name.endswith(CSV_FILE_EXTENSION):
                 print(f"Invalid file extension. Please enter a valid {CSV_EXTENSION} file.")
                 continue
 
