@@ -1,9 +1,14 @@
 import csv
 from collections import deque
+from time import time
 
 # Constants
 EXIT_COMMAND = 'exit'
 CSV_EXTENSION = '.csv'
+
+# Constants for error handling
+MAX_STACK_QUEUE_SIZE = 10000  # Adjust as necessary
+TIMEOUT = 60  # Adjust as necessary in seconds
 
 
 def get_input(prompt):
@@ -58,8 +63,8 @@ def get_user_input(graph):
                 "Enter to continue: "
             )
             debug_flag_input = get_input(
-                "Enter d to enable debug mode (verbose output), or type 'exit' "
-                "to quit, or press Enter to continue: "
+                "Enter d to enable debug mode (verbose output), or type 'exit'"
+                " to quit, or press Enter to continue: "
             )
             visualize_flag_input = get_input(
                 "Enter v to visualize the graph and the path found, or type "
@@ -108,10 +113,17 @@ def bfs(graph, start_node, end_node, debug=False):
     :return: A list representing the path from start_node to end_node (or None
              if no path found)
     """
+    start_time = time()
     queue = deque([start_node])
     visited = set([start_node])
     predecessor = {start_node: None}
+
     while queue:
+        if time() - start_time > TIMEOUT:
+            raise TimeoutError("BFS timed out")
+        if len(queue) > MAX_STACK_QUEUE_SIZE:
+            raise MemoryError("BFS queue size limit exceeded")
+
         if debug:
             print(f"Queue: {queue}")
             print(f"Visited: {visited}")
@@ -119,18 +131,20 @@ def bfs(graph, start_node, end_node, debug=False):
         current_node = queue.popleft()
         if current_node == end_node:
             return reconstruct_path(predecessor, start_node, end_node)
+        
         for neighbor in graph[current_node]:
             if neighbor not in visited:
                 visited.add(neighbor)
                 queue.append(neighbor)
                 predecessor[neighbor] = current_node
+
     return None
 
 
 def dfs(graph, start_node, end_node, debug=False):
     """
     Performs depth-first search (DFS) on the graph to find a path from
-    start_node to end_node.
+    start_node to end_node using an explicit stack data structure.
     :param graph: The graph represented as an adjacency list
     :param start_node: The start node for the DFS
     :param end_node: The end node for the DFS
@@ -138,28 +152,34 @@ def dfs(graph, start_node, end_node, debug=False):
     :return: A list representing the path from start_node to end_node (or None
              if no path found)
     """
-    visited = set()
-    predecessor = {}
+    start_time = time()
+    stack = [start_node]
+    visited = set([start_node])
+    predecessor = {start_node: None}
 
-    def helper(current_node):
+    while stack:
+        if time() - start_time > TIMEOUT:
+            raise TimeoutError("DFS timed out")
+        if len(stack) > MAX_STACK_QUEUE_SIZE:
+            raise MemoryError("DFS stack size limit exceeded")
+
+        current_node = stack.pop()
         if debug:
             print(f"Current Node: {current_node}")
             print(f"Visited: {visited}")
 
         if current_node == end_node:
-            return True
+            return reconstruct_path(predecessor, start_node, end_node)
+
         visited.add(current_node)
+
         for neighbor in graph[current_node]:
             if neighbor not in visited:
-                predecessor[neighbor] = current_node  # Moved this line up
-                if helper(neighbor):
-                    return True
-        return False
+                visited.add(neighbor)
+                stack.append(neighbor)
+                predecessor[neighbor] = current_node
 
-    if helper(start_node):
-        return reconstruct_path(predecessor, start_node, end_node)
-    else:
-        return None
+    return None
 
 
 def print_graph(graph):
