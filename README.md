@@ -29,7 +29,7 @@ pip install networkx matplotlib
    node_id,neighbor1_id,neighbor2_id,...
    ```
    Each row represents a node and its neighbors in the graph.
-   
+
 2. **Script Execution**: Run the script in a terminal or an IDE.
 
 3. **User Input**: Follow the on-screen prompts to provide the necessary inputs:
@@ -38,28 +38,31 @@ pip install networkx matplotlib
    - End node ID
    - Flags for printing the graph, enabling debug mode, and visualizing the graph
 
-## Function Descriptions
+### File Structure
 
-### `read_graph_from_csv(file_path)`
-Reads the graph data from the specified CSV file and returns it as an adjacency list.
+Your project should have the following structure:
 
-### `get_user_input(graph)`
-Prompts the user to input necessary information for graph traversal.
+```
+project_folder/
+│
+├── constants.py                   # File containing constant values
+├── input_output_utilities.py      # File with functions for input and output operations
+├── user_input_handling.py         # File for handling user inputs
+├── graph_traversal_algorithms.py  # File implementing the BFS and DFS algorithms
+├── visualization_and_printing.py  # File for graph visualization and printing
+└── main.py                        # Main script to run the tool
+```
 
-### `bfs(graph, start_node, end_node, debug=False)`
-Performs BFS on the graph to find the shortest path from `start_node` to `end_node`.
+### Function Descriptions
 
-### `dfs(graph, start_node, end_node, debug=False)`
-Performs DFS on the graph to find a path from `start_node` to `end_node`.
+- `constants.py`: Holds the constants used across the script.
+- `input_output_utilities.py`: Contains functions for reading the graph from a CSV file and getting user inputs.
+- `user_input_handling.py`: Includes functions for handling and validating user inputs.
+- `graph_traversal_algorithms.py`: Contains the BFS and DFS algorithms and a function for path reconstruction.
+- `graph_visualization_and_printing.py`: Houses functions for printing the graph to the console and visualizing the graph using NetworkX and Matplotlib.
+- `main.py`: The main script that integrates all the other modules and runs the command line interface for the graph traversal tool.
 
-### `print_graph(graph)`
-Prints the graph represented as an adjacency list.
-
-### `visualize_graph(graph, path)`
-Visualizes the graph and the specified path using NetworkX and Matplotlib.
-
-### `graph_traversal_cli()`
-The main function that orchestrates the entire process of reading the graph data from a file, getting user input, and performing BFS and DFS.
+To run the tool, execute the `main.py` script.
 
 ## Contribution
 
@@ -72,4 +75,3 @@ If you would like to contribute to this project, feel free to fork the repositor
 ## Contact
 
 For any queries or suggestions, please contact [es8070@ship.edu].
-
